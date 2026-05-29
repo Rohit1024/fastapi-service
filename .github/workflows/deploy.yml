@@ -13,9 +13,9 @@ permissions:
   id-token: write
 
 env:
-  PROJECT_ID: 'sidekick-1024'
-  WIF_PROVIDER: 'projects/PROJECT_NUMBER/locations/global/workloadIdentityPools/github-pool/providers/github-provider' # Replace PROJECT_NUMBER when configuring WIF
-  SA_EMAIL: 'github-actions-sa@sidekick-1024.iam.gserviceaccount.com'
+  PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
+  WIF_PROVIDER: 'projects/${{ secrets.GCP_PROJECT_NUMBER }}/locations/global/workloadIdentityPools/github-pool/providers/github-provider'
+  SA_EMAIL: 'github-actions-sa@${{ secrets.GCP_PROJECT_ID }}.iam.gserviceaccount.com'
   REGION: 'us-central1'
   AR_REPO: 'poc-repo'
   SERVICE_NAME: 'fastapi-service'

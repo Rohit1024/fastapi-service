@@ -29,11 +29,11 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v4
 
-      # Set up uv package manager for ultra-fast setup
       - name: Set up uv
         uses: astral-sh/setup-uv@v5
         with:
           python-version: '3.14'
+          cache-dependency-glob: "pyproject.toml"
 
       - name: Install Dependencies
         run: uv pip install -r pyproject.toml --extra dev

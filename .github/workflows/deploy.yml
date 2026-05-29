@@ -106,9 +106,8 @@ jobs:
           service: ${{ env.SERVICE_NAME }}
           region: ${{ env.REGION }}
           image: ${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.AR_REPO }}/${{ env.SERVICE_NAME }}:${{ github.sha }}
-          no_traffic: true
           tag: green
-          flags: '--liveness-probe=httpGet.path=/health'
+          flags: '--liveness-probe=httpGet.path=/health flags: --no-invoker-iam-check'
           env_vars: |
             PROJECT_ID=${{ env.PROJECT_ID }}
             SLACK_WEBHOOK_URL=${{ secrets.SLACK_WEBHOOK_URL }}

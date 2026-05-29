@@ -117,7 +117,7 @@ jobs:
           gcloud run services update-traffic ${{ env.SERVICE_NAME }} \
             --region=${{ env.REGION }} \
             --project=${{ env.PROJECT_ID }} \
-            --to-revisions=green=100
+            --to-tags=green=100
 
       - name: Send Slack Notification (Success)
         if: success()

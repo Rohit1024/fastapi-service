@@ -17,12 +17,3 @@ def read_root():
 def health_check():
     return {"status": "healthy"}
 
-
-def export_openapi():
-    """Helper to export the OpenAPI spec to a file."""
-    with open("openapi.json", "w") as f:
-        json.dump(app.openapi(), f, indent=2)
-
-
-if __name__ == "__main__":
-    export_openapi()

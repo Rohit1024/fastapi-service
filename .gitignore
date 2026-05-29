@@ -12,6 +12,3 @@ __pycache__/
 .venv/
 venv/
 env/
-
-# Locally generated assets
-openapi.json

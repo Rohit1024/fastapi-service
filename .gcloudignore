@@ -8,7 +8,6 @@ __pycache__/
 .venv/
 venv/
 .pytest_cache/
-openapi.json
 
 # CI/CD config not needed by Cloud Build
 .github/

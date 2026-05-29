@@ -46,15 +46,6 @@ jobs:
       - name: Run Tests
         run: pytest
 
-      # Export OpenAPI JSON and upload as workflow artifact
-      - name: Export OpenAPI Spec
-        run: python main.py
-
-      - name: Upload OpenAPI Spec
-        uses: actions/upload-artifact@v4
-        with:
-          name: openapi-spec
-          path: openapi.json
 
       - name: Send Slack Notification (Failure)
         if: failure()

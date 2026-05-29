@@ -1,0 +1,16 @@
+[project]
+name = "fastapi-service"
+version = "1.0.0"
+description = "A template service running on Cloud Run"
+requires-python = ">=3.12"
+dependencies = [
+    "fastapi>=0.136.3",
+    "uvicorn>=0.48.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=9.0.3",
+    "httpx>=0.28.1",
+    "ruff>=0.15.15",
+]

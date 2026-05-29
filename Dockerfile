@@ -1,0 +1,16 @@
+FROM python:3.14-slim
+
+# Copy uv binary from the official image
+COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
+
+WORKDIR /app
+
+# Install dependencies using uv
+COPY pyproject.toml .
+RUN uv pip install --system --no-cache -r pyproject.toml
+
+COPY main.py .
+
+EXPOSE 8080
+
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8080"]

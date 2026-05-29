@@ -1,0 +1,14 @@
+.git
+.gitignore
+.gcloudignore
+
+# Python cache and environments
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.pytest_cache/
+openapi.json
+
+# CI/CD config not needed by Cloud Build
+.github/

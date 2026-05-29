@@ -1,0 +1,108 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+permissions:
+  contents: read
+  id-token: write
+
+env:
+  PROJECT_ID: 'sidekick-1024'
+  WIF_PROVIDER: 'projects/PROJECT_NUMBER/locations/global/workloadIdentityPools/github-pool/providers/github-provider' # Replace PROJECT_NUMBER when configuring WIF
+  SA_EMAIL: 'github-actions-sa@sidekick-1024.iam.gserviceaccount.com'
+  REGION: 'us-central1'
+  AR_REPO: 'poc-repo'
+  SERVICE_NAME: 'fastapi-service'
+
+jobs:
+  lint-and-test:
+    name: Lint & Test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      # Set up uv package manager for ultra-fast setup
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          python-version: '3.14'
+
+      - name: Install Dependencies
+        run: uv pip install --system -r pyproject.toml --extra dev
+
+      - name: Run Ruff Lint
+        run: ruff check .
+
+      - name: Run Ruff Format Check
+        run: ruff format --check .
+
+      - name: Run Tests
+        run: pytest
+
+      # Export OpenAPI JSON and upload as workflow artifact
+      - name: Export OpenAPI Spec
+        run: python main.py
+
+      - name: Upload OpenAPI Spec
+        uses: actions/upload-artifact@v4
+        with:
+          name: openapi-spec
+          path: openapi.json
+
+      - name: Send Slack Notification (Failure)
+        if: failure()
+        uses: rtCamp/action-slack-notify@v2
+        env:
+          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK_URL }}
+          SLACK_COLOR: '#FF0000'
+          SLACK_MESSAGE: 'Lint, format, or test suite failed for commit ${{ github.sha }} on ${{ github.ref }}'
+          SLACK_TITLE: 'CI Pipeline Failed ❌'
+
+  build-and-deploy:
+    name: Build & Deploy via Cloud Build
+    needs: lint-and-test
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Google Auth (Workload Identity Federation)
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ env.WIF_PROVIDER }}
+          service_account: ${{ env.SA_EMAIL }}
+
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@v2
+
+      - name: Run Cloud Build
+        run: |
+          gcloud builds submit --config=cloudbuild.yaml \
+            --substitutions=COMMIT_SHA=${{ github.sha }},_REGION=${{ env.REGION }},_AR_REPO=${{ env.AR_REPO }},_SERVICE_NAME=${{ env.SERVICE_NAME }} \
+            --project=${{ env.PROJECT_ID }}
+
+      - name: Send Slack Notification (Success)
+        if: success()
+        uses: rtCamp/action-slack-notify@v2
+        env:
+          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK_URL }}
+          SLACK_COLOR: '#00FF00'
+          SLACK_MESSAGE: 'FastAPI service successfully deployed to Cloud Run!'
+          SLACK_TITLE: 'CD Pipeline Succeeded 🚀'
+
+      - name: Send Slack Notification (Failure)
+        if: failure()
+        uses: rtCamp/action-slack-notify@v2
+        env:
+          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK_URL }}
+          SLACK_COLOR: '#FF0000'
+          SLACK_MESSAGE: 'Deployment failed for commit ${{ github.sha }}'
+          SLACK_TITLE: 'CD Pipeline Failed ❌'
